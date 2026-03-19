@@ -1,10 +1,12 @@
 from langchain_community.vectorstores import FAISS
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEndpointEmbeddings
 from loader import load_and_split
+import os
 
 def get_embeddings():
-    return HuggingFaceEmbeddings(
-        model_name="sentence-transformers/all-MiniLM-L6-v2"
+    return HuggingFaceEndpointEmbeddings(
+        model="sentence-transformers/all-MiniLM-L6-v2",
+        huggingfacehub_api_token=os.environ.get("HF_TOKEN")
     )
 
 def create_vectorstore(file_paths):
@@ -15,17 +17,11 @@ def create_vectorstore(file_paths):
     for path in file_paths:
         chunks = load_and_split(path)
         all_chunks.extend(chunks)
-        print(f"✅ Loaded: {path} — {len(chunks)} chunks")
-    print(f"✅ Total chunks: {len(all_chunks)}")
     return FAISS.from_texts(all_chunks, embeddings)
 
 def save_vectorstore(vectorstore, path="vectorstore"):
     vectorstore.save_local(path)
-    print(f"✅ Saved to {path}/")
 
 def load_vectorstore(path="vectorstore"):
     embeddings = get_embeddings()
-    return FAISS.load_local(
-        path, embeddings,
-        allow_dangerous_deserialization=True
-    )
+    return FAISS.load_local(path, embeddings, allow_dangerous_deserialization=True)
