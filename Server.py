@@ -22,7 +22,6 @@ def upload():
     files = request.files.getlist('pdfs')
     print("PDF list:", files)
 
-    # Empty file check
     valid_files = [f for f in files if f and f.filename != '']
     if not valid_files:
         return jsonify({'error': 'No files received'}), 400
@@ -84,4 +83,5 @@ def get_files():
     return jsonify({'files': uploaded_files})
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000, host='127.0.0.1')
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
